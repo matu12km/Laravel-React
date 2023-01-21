@@ -1,0 +1,52 @@
+# docker-composeのバージョン
+version: "3.9"
+
+# コンテナ定義
+services:
+  # webサーバー
+  web:
+    # コンテナ名
+    container_name: "web"
+    # コンテナの作成に使用するDockerfileのパス
+    build:
+      dockerfile: "./container/web/Dockerfile"
+    # ホスト側のポート:コンテナ側のポートを指定
+    ports:
+      - "8080:80"
+    # src配下のファイルをコンテナ内の~/va/www/html配下に配置
+    volumes:
+      - "./src:/var/www/html"
+      - "./src/storage:/var/www/html/storage"
+      - "./src/storage/logs:/var/www/html/storage/logs"
+
+  # PHPサーバー
+  php:
+    # コンテナ名
+    container_name: "php"
+    # コンテナの作成に使用するDockerfileのパス
+    build:
+      context: .
+      dockerfile: "./container/php/Dockerfile"
+    # srcディレクトリ内のファイルをコンテナ内の~/var/www/html配下にマウント
+    volumes:
+      - "./src:/var/www/html"
+
+# DBサーバー
+  db:
+    # コンテナ名
+    container_name: "db"
+    # コンテナの作成に使用するDockerfileのパス
+    build:
+      dockerfile: "./container/db/Dockerfile"
+    # ホスト側のポート:コンテナ側のポートを指定
+    ports:
+      - "3309:3309"
+    # 環境変数の指定
+    environment:
+      MYSQL_ROOT_PASSWORD: laravelAppPass
+      MYSQL_DATABASE: laravelAppDB
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: laravelUsePassword
+    # srcディレクトリ内のファイルをコンテナ内の~/var/www/html配下にマウント
+    volumes:
+      - "./container/db/data:/var/lib/mysql"
