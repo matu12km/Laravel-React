@@ -18,6 +18,9 @@ services:
       - "./src:/var/www/html"
       - "./src/storage:/var/www/html/storage"
       - "./src/storage/logs:/var/www/html/storage/logs"
+    links:
+      - php
+      - react
 
   # PHPサーバー
   php:
@@ -31,7 +34,18 @@ services:
     volumes:
       - "./src:/var/www/html"
 
-# DBサーバー
+  react:
+    container_name: react
+    build: 
+      dockerfile: "./container/react/Dockerfile"
+    volumes:
+      - ./container/react:/react
+    command: sh -c "npm install && npm start"
+    ports:
+      - 3000:3000
+      - 3001:3001
+
+  # DBサーバー
   db:
     # コンテナ名
     container_name: "db"
@@ -50,3 +64,13 @@ services:
     # srcディレクトリ内のファイルをコンテナ内の~/var/www/html配下にマウント
     volumes:
       - "./container/db/data:/var/lib/mysql"
+
+  phpmyadmin:
+    container_name: phpmyadmin
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - 8001:80
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=db
+      - PMA_ROOT_PASSWORD=laravelAppPass
